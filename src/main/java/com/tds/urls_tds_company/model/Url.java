@@ -28,8 +28,10 @@ public class Url implements Serializable{
     @Column(name = "url", nullable = false, unique = true)
     private String url;
 
-    @Column(name = "shortUrl", nullable = false, unique = true)
+    @Column(name = "short_url", nullable = false, unique = true)
     private String shortUrl;
+
+    private int accessCount;
     
     @Override
     public int hashCode() {

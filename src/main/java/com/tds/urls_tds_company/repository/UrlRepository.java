@@ -9,5 +9,5 @@ import com.tds.urls_tds_company.model.Url;
 
 public interface UrlRepository extends JpaRepository<Url, Long>{
 
-    Optional<Url> findByUrl(String shortUrl);
+    Optional<Url> findByShortUrl(String shortUrl);
 }

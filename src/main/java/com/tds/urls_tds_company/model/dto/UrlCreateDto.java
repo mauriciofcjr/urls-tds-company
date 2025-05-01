@@ -15,7 +15,6 @@ import lombok.ToString;
 public class UrlCreateDto {
     
     @NotBlank
-    private String url;
-    @NotBlank
+    private String url;    
     private String shortUrl;
 }
