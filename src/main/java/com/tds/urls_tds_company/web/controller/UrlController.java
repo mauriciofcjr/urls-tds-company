@@ -3,6 +3,9 @@ package com.tds.urls_tds_company.web.controller;
 import java.io.IOException;
 import java.util.Optional;
 
+import org.hibernate.annotations.Parameter;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -12,7 +15,9 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.tds.urls_tds_company.exception.EntityNotFoundException;
 import com.tds.urls_tds_company.model.Url;
+import com.tds.urls_tds_company.model.dto.PageableDto;
 import com.tds.urls_tds_company.model.dto.UrlCreateDto;
 import com.tds.urls_tds_company.model.dto.UrlResponseDto;
 import com.tds.urls_tds_company.model.dto.mapper.UrlMapper;
@@ -22,7 +27,6 @@ import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.RequestParam;
-
 
 @RequiredArgsConstructor
 @RestController
@@ -45,21 +49,17 @@ public class UrlController {
     }
 
     @GetMapping("/original/{shortUrl}")
-    public ResponseEntity<Void> urlOriginal(@PathVariable String shortUrl, HttpServletResponse response) throws IOException{
-        Url url = urlService.getOriginalUrl(shortUrl);
-        if(!url.getUrl().isEmpty()){
-            response.sendRedirect(url.getUrl());
-            return ResponseEntity.ok().build();
-        }
-        return ResponseEntity.notFound().build();
-        
-        
-    }
+    public ResponseEntity<Void> urlOriginal(@PathVariable String shortUrl, HttpServletResponse response)
+            throws IOException {
+        Optional<Url> url = urlService.getOriginalUrl(shortUrl);
 
-    @GetMapping("/estatisticas")
-    public String getMethodName(@RequestParam String param) {
-        return new String();
-    }
-    
+        if (url.isPresent()) {
+            response.sendRedirect(url.get().getUrl());
+            return ResponseEntity.ok().build();
+        } else {
+            throw new EntityNotFoundException(String.format("Url com atalho: %s não foi encontrado!", shortUrl));
+        }
+
+    }    
 
 }

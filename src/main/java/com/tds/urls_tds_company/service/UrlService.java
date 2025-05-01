@@ -1,14 +1,18 @@
 package com.tds.urls_tds_company.service;
 
+import java.time.LocalDate;
 import java.util.Base64;
+import java.util.Optional;
 
 import org.springframework.stereotype.Service;
 
 import com.tds.urls_tds_company.exception.EntityNotFoundException;
 import com.tds.urls_tds_company.exception.UrlUniqueViolationException;
+import com.tds.urls_tds_company.model.EstatisticaVisita;
 import com.tds.urls_tds_company.model.Url;
 import com.tds.urls_tds_company.model.dto.UrlCreateDto;
 import com.tds.urls_tds_company.model.dto.mapper.UrlMapper;
+import com.tds.urls_tds_company.repository.EstatisticaVisitaRepository;
 import com.tds.urls_tds_company.repository.UrlRepository;
 
 import jakarta.transaction.Transactional;
@@ -19,6 +23,7 @@ import lombok.RequiredArgsConstructor;
 public class UrlService {
 
     private final UrlRepository urlRepository;
+    private final EstatisticaVisitaRepository estatisticaVisitaRepository;
 
     @Transactional
     public Url createUrl(UrlCreateDto urlCreateDto) {
@@ -40,15 +45,30 @@ public class UrlService {
                         () -> new EntityNotFoundException(String.format("Url com id=%s não encontrado", id)));
     }
 
-    public Url getOriginalUrl(String shortUrl) {
+    public Optional<Url> getOriginalUrl(String shortUrl) {        
 
-        return urlRepository.findByShortUrl(shortUrl)
-                .orElseThrow(
-                        () -> new EntityNotFoundException(String.format("Url com atalho=%s não encontrado", shortUrl)));
+        Optional<Url> url = urlRepository.findByShortUrl(shortUrl);
+        if(url.isPresent()){
+            registerAccess(shortUrl);
+        }
+        return url;
+
     }
 
     private String generateShortUrl(String url) {
         return Base64.getUrlEncoder().encodeToString(url.getBytes()).substring(0, 8);
+    }
+
+    private void registerAccess(String shortUrl) {
+        LocalDate today = LocalDate.now();
+        Optional<EstatisticaVisita> acessosDiarios = estatisticaVisitaRepository.findByShortUrlAndAccessDate(shortUrl, today);
+        if (acessosDiarios.isPresent()) {
+            acessosDiarios.get().incrementAccessCount();
+            estatisticaVisitaRepository.save(acessosDiarios.get());
+        } else {
+            EstatisticaVisita novoAcesso = new EstatisticaVisita(null, shortUrl, today, 1);
+            estatisticaVisitaRepository.save(novoAcesso);
+        }
     }
 
 }

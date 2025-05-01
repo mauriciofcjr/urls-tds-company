@@ -30,8 +30,7 @@ public class Url implements Serializable{
 
     @Column(name = "short_url", nullable = false, unique = true)
     private String shortUrl;
-
-    private int accessCount;
+    
     
     @Override
     public int hashCode() {
