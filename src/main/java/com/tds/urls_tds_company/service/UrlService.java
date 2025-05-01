@@ -2,6 +2,7 @@ package com.tds.urls_tds_company.service;
 
 import org.springframework.stereotype.Service;
 
+import com.tds.urls_tds_company.exception.UrlUniqueViolationException;
 import com.tds.urls_tds_company.model.Url;
 import com.tds.urls_tds_company.repository.UrlRepository;
 
@@ -16,7 +17,12 @@ public class UrlService {
 
     @Transactional
     public Url createUrl(Url url) {        
-        return urlRepository.save(url);
+        try{
+            return urlRepository.save(url);
+        }catch (org.springframework.dao.DataIntegrityViolationException ex){
+            throw new UrlUniqueViolationException(String.format("Recurso já cadastrado! Url: '%s', Atalho: '%s'", url.getUrl(), url.getShortUrl()));
+        }
+        
     }
 
 }
