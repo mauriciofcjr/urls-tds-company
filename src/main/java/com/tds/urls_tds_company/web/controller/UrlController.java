@@ -7,8 +7,11 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.tds.urls_tds_company.model.Url;
 import com.tds.urls_tds_company.model.dto.UrlCreateDto;
 import com.tds.urls_tds_company.model.dto.UrlResponseDto;
+import com.tds.urls_tds_company.model.dto.mapper.UrlMapper;
+import com.tds.urls_tds_company.service.UrlService;
 
 import lombok.RequiredArgsConstructor;
 
@@ -17,9 +20,12 @@ import lombok.RequiredArgsConstructor;
 @RequestMapping("api/v1/url")
 public class UrlController {
 
+    private final UrlService urlService;
+
     @PostMapping
-    public ResponseEntity<UrlResponseDto> createUrl(@RequestBody UrlCreateDto urlRequestDto) {
-        UrlResponseDto urlResponseDto = new UrlResponseDto(urlRequestDto.url(), urlRequestDto.shortUrl());
+    public ResponseEntity<UrlResponseDto> createUrl(@RequestBody UrlCreateDto urlCreateDto) {
+        Url url = urlService.createUrl(UrlMapper.toUrl(urlCreateDto));
+        UrlResponseDto urlResponseDto = UrlMapper.toDto(url);
         return ResponseEntity.status(HttpStatus.CREATED).body(urlResponseDto);
     }
 
