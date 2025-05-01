@@ -2,6 +2,8 @@ package com.tds.urls_tds_company.service;
 
 import java.time.LocalDate;
 import java.util.Base64;
+import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 import org.springframework.stereotype.Service;
@@ -69,6 +71,18 @@ public class UrlService {
             EstatisticaVisita novoAcesso = new EstatisticaVisita(null, shortUrl, today, 1);
             estatisticaVisitaRepository.save(novoAcesso);
         }
+    }
+
+    public Map<String, Integer> getDailyAndTotalAccess(String shortUrl) {
+        LocalDate date = LocalDate.now();
+        List<Object[]> results = estatisticaVisitaRepository.findDailyAndTotalAccess(shortUrl, date);
+        if (!results.isEmpty() && results.get(0) != null) {
+            Integer totalAccess = ((Number) results.get(0)[0]).intValue();
+            Integer dailyAccess = ((Number) results.get(0)[1]).intValue();
+            
+            return Map.of("acessosDiarios", dailyAccess, "acessoTotal", totalAccess);
+        }
+        return Map.of("acessosDiarios", 0, "acessoTotal", 0);
     }
 
 }
