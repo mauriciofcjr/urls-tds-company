@@ -13,8 +13,8 @@ import lombok.ToString;
 @AllArgsConstructor
 @ToString
 public class UrlCreateDto {
-    
+
     @NotBlank
-    private String url;    
-    private String shortUrl;
+    private String url;
+
 }

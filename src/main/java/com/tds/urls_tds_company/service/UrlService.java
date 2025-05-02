@@ -5,6 +5,7 @@ import java.util.Base64;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.UUID;
 
 import org.springframework.stereotype.Service;
 
@@ -30,12 +31,12 @@ public class UrlService {
     @Transactional
     public Url createUrl(UrlCreateDto urlCreateDto) {
         try {
-            urlCreateDto.setShortUrl(generateShortUrl(urlCreateDto.getUrl()));
-            return urlRepository.save(UrlMapper.toUrl(urlCreateDto));
+            Url newUrl = new Url();
+            newUrl.setUrl(urlCreateDto.getUrl());
+            newUrl.setShortUrl(generateShortUrl(urlCreateDto.getUrl()));
+            return urlRepository.save(newUrl);
         } catch (org.springframework.dao.DataIntegrityViolationException ex) {
-            throw new UrlUniqueViolationException(
-                    String.format("Recurso já cadastrado! Url: s% ou Atalho: s%", urlCreateDto.getUrl(),
-                            urlCreateDto.getShortUrl()));
+            throw new UrlUniqueViolationException("URl já cadastrada no sistema!");
         }
 
     }
@@ -47,10 +48,10 @@ public class UrlService {
                         () -> new EntityNotFoundException(String.format("Url com id=%s não encontrado", id)));
     }
 
-    public Optional<Url> getOriginalUrl(String shortUrl) {        
+    public Optional<Url> getOriginalUrl(String shortUrl) {
 
         Optional<Url> url = urlRepository.findByShortUrl(shortUrl);
-        if(url.isPresent()){
+        if (url.isPresent()) {
             registerAccess(shortUrl);
         }
         return url;
@@ -58,12 +59,14 @@ public class UrlService {
     }
 
     private String generateShortUrl(String url) {
-        return Base64.getUrlEncoder().encodeToString(url.getBytes()).substring(0, 8);
+        String uuid = UUID.randomUUID().toString().replace("-", "").substring(0, 8);
+        return uuid;
     }
 
     private void registerAccess(String shortUrl) {
         LocalDate today = LocalDate.now();
-        Optional<EstatisticaVisita> acessosDiarios = estatisticaVisitaRepository.findByShortUrlAndAccessDate(shortUrl, today);
+        Optional<EstatisticaVisita> acessosDiarios = estatisticaVisitaRepository.findByShortUrlAndAccessDate(shortUrl,
+                today);
         if (acessosDiarios.isPresent()) {
             acessosDiarios.get().incrementAccessCount();
             estatisticaVisitaRepository.save(acessosDiarios.get());
@@ -79,7 +82,7 @@ public class UrlService {
         if (!results.isEmpty() && results.get(0) != null) {
             Integer totalAccess = ((Number) results.get(0)[0]).intValue();
             Integer dailyAccess = ((Number) results.get(0)[1]).intValue();
-            
+
             return Map.of("acessosDiarios", dailyAccess, "acessoTotal", totalAccess);
         }
         return Map.of("acessosDiarios", 0, "acessoTotal", 0);
