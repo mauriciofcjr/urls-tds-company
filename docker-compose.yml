@@ -1,0 +1,18 @@
+version: '3.8'
+services:
+  mysql:
+    image: mysql:latest
+    container_name: mysql-repositorio
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: salmo121
+      MYSQL_DATABASE: urls_tds_company
+      MYSQL_USER: root
+      MYSQL_PASSWORD: salmo121
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+
+volumes:
+  mysql_data:
