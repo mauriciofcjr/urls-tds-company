@@ -71,7 +71,7 @@ public class UrlController {
 
         if (url.isPresent()) {
             response.sendRedirect(url.get().getUrl());
-            return ResponseEntity.ok().build();
+            return ResponseEntity.status(302).build();
         } else {
             throw new EntityNotFoundException(String.format("Url com atalho: %s não foi encontrado!", shortUrl));
         }
